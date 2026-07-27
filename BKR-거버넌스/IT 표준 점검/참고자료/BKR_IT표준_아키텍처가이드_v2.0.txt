@@ -1,0 +1,13 @@
+BKR IT 표준 아키텍처 가이드 v2.0 (참고자료 - 가짜 샘플)
+작성일: 2026-07-27
+작성부서: BKR IT 기획팀
+
+[레이어 아키텍처 원칙]
+- Controller: 요청/응답 처리만 담당, 비즈니스 로직 금지
+- Service: 비즈니스 로직 집중, 트랜잭션 경계 담당
+- Repository: DB 접근만 담당
+
+[공통 모듈 필수 사용 목록]
+- ResponseWrapper: 모든 API 응답 공통 포맷
+- BkrException: 표준 예외 클래스
+- BkrLogger: SLF4J 래퍼 유틸

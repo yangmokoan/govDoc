@@ -1,0 +1,46 @@
+## 점검 목적
+BKR IT 표준 거버넌스 문서(governance_IT표준점검.md)를 기준으로
+Java Spring Boot 소스코드의 IT 표준 준수 여부를 점검한다.
+
+## 참조 파일
+- 거버넌스 기준: governance_IT표준점검.md
+- 네이밍 검증 보조: 참고자료/helper_naming_checker.py
+  → check_naming_convention(file_path) 함수 사용
+  → 클래스/메서드/변수명 패턴을 정규식으로 사전 분류 후 결과 반환
+- 레이어 참고자료: 참고자료/BKR_IT표준_아키텍처가이드_v2.0.pdf
+
+## 점검 지시
+1. governance_IT표준점검.md의 규칙을 숙지한다.
+2. 참고자료/helper_naming_checker.py를 읽고 check_naming_convention() 활용법을 파악한다.
+3. Glob으로 src/ 하위 전체 .java 파일을 탐색한다.
+4. 각 파일에 대해 아래 항목을 점검한다:
+   - 네이밍 컨벤션 위반 여부
+   - Controller에서 Repository 직접 호출 여부 (레이어 위반)
+   - @RestController에 공통 ResponseWrapper 미사용 여부
+   - try-catch 내 예외를 단순 e.printStackTrace()로만 처리하는 경우
+   - SLF4J 대신 System.out.println 사용 여부
+5. 결과를 아래 JSON 형식으로만 출력한다.
+6. 결과 HTML을 참고자료/template_IT표준점검_v1.html 레이아웃에 맞춰
+   /tmp/review/{jobId}/result.html 로 저장한다.
+
+## 출력 형식
+{
+  "summary": {
+    "total_files": 숫자,
+    "violation_count": 숫자,
+    "critical": 숫자,
+    "high": 숫자,
+    "medium": 숫자,
+    "low": 숫자
+  },
+  "violations": [
+    {
+      "file": "상대경로/파일명.java",
+      "line": 줄번호,
+      "type": "LAYER_VIOLATION | NAMING | LOGGING | EXCEPTION | RESPONSE_FORMAT",
+      "severity": "Critical | High | Medium | Low",
+      "description": "위반 내용 설명",
+      "recommendation": "수정 권고 사항"
+    }
+  ]
+}

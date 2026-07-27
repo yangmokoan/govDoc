@@ -1,0 +1,43 @@
+## 점검 목적
+BKR 테스트 케이스 생성 거버넌스(governance_테스트Case생성.md)를 기준으로
+Java Service 클래스를 분석하여 JUnit5 + Mockito 단위 테스트 코드를 자동 생성한다.
+
+## 참조 파일
+- 거버넌스 기준: governance_테스트Case생성.md
+- 메서드 분석 보조: 참고자료/helper_method_analyzer.py
+  → extract_methods(file_path) 함수 사용
+  → 메서드 시그니처, 파라미터 타입, 반환 타입, 예외 선언을 사전 추출
+- 테스트 패턴 참고: 참고자료/BKR_테스트작성_예시_v1.txt
+
+## 생성 지시
+1. governance_테스트Case생성.md의 규칙을 숙지한다.
+2. 참고자료/helper_method_analyzer.py를 읽고 extract_methods() 활용법을 파악한다.
+3. Glob으로 src/main/java/ 하위 *Service.java, *ServiceImpl.java 파일을 탐색한다.
+4. 각 Service 파일에 대해:
+   - public 메서드를 모두 식별한다.
+   - 각 메서드의 정상 케이스, 예외 케이스, 경계값 케이스를 분석한다.
+   - JUnit5 + Mockito(BDDMockito 스타일) + AssertJ 기반 테스트 코드를 생성한다.
+   - Given-When-Then 주석 구분을 반드시 포함한다.
+5. 생성된 테스트 파일을 /tmp/review/{jobId}/test/ 하위에 저장한다.
+6. 생성 결과 요약을 아래 JSON 형식으로 출력한다.
+7. 결과 HTML을 template_테스트Case생성_v1.html 레이아웃에 맞춰
+   /tmp/review/{jobId}/result.html 로 저장한다.
+
+## 출력 형식
+{
+  "summary": {
+    "total_service_files": 숫자,
+    "total_methods": 숫자,
+    "generated_test_count": 숫자,
+    "happy_path_count": 숫자,
+    "exception_case_count": 숫자
+  },
+  "generated": [
+    {
+      "source_file": "상대경로/XxxService.java",
+      "test_file": "test/XxxServiceTest.java",
+      "method_count": 숫자,
+      "test_case_count": 숫자
+    }
+  ]
+}

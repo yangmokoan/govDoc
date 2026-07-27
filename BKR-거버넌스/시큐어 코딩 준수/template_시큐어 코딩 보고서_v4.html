@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{PROJECT_NAME}} 시큐어코딩 점검 결과 v4 — {{INSPECT_DATE}}</title>
+<style>
+/* ================================================================
+   BKR 시큐어코딩 점검 보고서 템플릿 v4
+   CSS를 수정하지 마세요. 데이터 플레이스홀더만 교체합니다.
+   ================================================================ */
+:root {
+  --blocker:#6a0dad; --critical:#c62828; --major:#e65100; --minor:#f57f17; --info:#546e7a;
+  --sec:#b71c1c; --rel:#1565c0; --mnt:#2e7d32; --hot:#6a1b9a; --acc:#37474f; --cov:#00695c; --dup:#4e342e;
+  --bg:#f0f2f5;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:var(--bg);color:#212121;font-size:14px;line-height:1.65}
+.header{background:linear-gradient(135deg,#1a237e,#283593,#3949ab);color:#fff;padding:32px 40px}
+.header h1{font-size:24px;font-weight:700;margin-bottom:6px}
+.header .sub{font-size:13px;opacity:.85;margin-bottom:18px}
+.header-meta{display:flex;gap:12px;flex-wrap:wrap}
+.header-meta span{font-size:12px;background:rgba(255,255,255,.15);padding:3px 12px;border-radius:20px}
+.wrap{max-width:1280px;margin:0 auto;padding:24px 16px}
+
+/* 카테고리 탭 색상 */
+.cat-sec{border-left:5px solid var(--sec)}
+.cat-rel{border-left:5px solid var(--rel)}
+.cat-mnt{border-left:5px solid var(--mnt)}
+.cat-hot{border-left:5px solid var(--hot)}
+.cat-acc{border-left:5px solid var(--acc)}
+.cat-cov{border-left:5px solid var(--cov)}
+.cat-dup{border-left:5px solid var(--dup)}
+
+.section{background:#fff;border-radius:8px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.1);overflow:hidden}
+.sec-title{font-size:16px;font-weight:700;padding:14px 18px;border-bottom:2px solid #e8e8e8;display:flex;align-items:center;gap:8px}
+.sec-body{padding:18px}
+
+/* 통계 카드 */
+.stat-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:18px}
+.stat-card{border-radius:8px;padding:14px 10px;text-align:center;color:#fff}
+.s-sec{background:linear-gradient(135deg,#b71c1c,#c62828)}
+.s-rel{background:linear-gradient(135deg,#0d47a1,#1565c0)}
+.s-mnt{background:linear-gradient(135deg,#1b5e20,#2e7d32)}
+.s-hot{background:linear-gradient(135deg,#4a148c,#6a1b9a)}
+.s-acc{background:linear-gradient(135deg,#263238,#37474f)}
+.s-cov{background:linear-gradient(135deg,#004d40,#00695c)}
+.s-dup{background:linear-gradient(135deg,#3e2723,#4e342e)}
+.stat-num{font-size:30px;font-weight:800;line-height:1}
+.stat-lbl{font-size:11px;opacity:.9;margin-top:4px}
+.stat-sublbl{font-size:10px;background:rgba(255,255,255,.25);border-radius:8px;padding:1px 7px;display:inline-block;margin-bottom:5px;letter-spacing:.4px;font-weight:700}
+
+/* 심각도 배지 */
+.badge{display:inline-block;padding:2px 9px;border-radius:12px;color:#fff;font-size:12px;font-weight:700;white-space:nowrap}
+.b-blocker{background:#6a0dad}
+.b-critical{background:#c62828}
+.b-major{background:#e65100}
+.b-minor{background:#f57f17}
+.b-info{background:#546e7a}
+.b-high{background:#ad1457}
+.b-medium{background:#6a1b9a}
+.b-low{background:#37474f}
+.b-ok{background:#2e7d32}
+.b-review{background:#00695c}
+.cat-badge{display:inline-block;padding:2px 9px;border-radius:4px;color:#fff;font-size:11px;font-weight:700}
+.c-sec{background:var(--sec)} .c-rel{background:var(--rel)} .c-mnt{background:var(--mnt)}
+.c-hot{background:var(--hot)} .c-acc{background:var(--acc)} .c-cov{background:var(--cov)} .c-dup{background:var(--dup)}
+
+/* 종합표 */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{background:#263238;color:#fff;padding:9px 12px;text-align:left;white-space:nowrap}
+.tbl td{border:1px solid #e0e0e0;padding:8px 12px;vertical-align:top}
+.tbl tr:nth-child(odd){background:#fafafa}
+.tbl tr:hover{background:#e8eaf6}
+.mono{font-family:monospace;font-size:11px;color:#455a64}
+.rule-link{font-family:monospace;font-size:11px;color:#1565c0;text-decoration:none;white-space:nowrap;font-weight:700}
+.rule-link:hover{text-decoration:underline;color:#0d47a1}
+
+/* 이슈 카드 */
+.issue{border:1px solid #e0e0e0;border-radius:6px;margin-bottom:14px;overflow:hidden}
+.issue-hd{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafafa}
+.issue-title{font-weight:700;font-size:14px;flex:1}
+.issue-bd{padding:14px 16px}
+.issue-meta{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.meta{font-size:12px;background:#f5f5f5;border:1px solid #e0e0e0;padding:2px 9px;border-radius:4px}
+.meta strong{color:#263238}
+pre.code{background:#263238;color:#cfd8dc;padding:12px;border-radius:6px;font-size:12px;overflow-x:auto;line-height:1.7;white-space:pre-wrap;word-break:break-all;margin:8px 0}
+pre.code .bad{color:#ef9a9a}
+pre.code .ok{color:#a5d6a7}
+pre.code .cm{color:#80cbc4}
+.impact{background:#fff3e0;border-left:3px solid #ff9800;border-radius:3px;padding:9px 12px;font-size:13px;margin-top:8px}
+.fix{background:#e8f5e9;border-left:3px solid #43a047;border-radius:3px;padding:9px 12px;font-size:13px;margin-top:8px}
+.fix ul{padding-left:18px}.fix li{margin-bottom:3px}
+
+/* 카테고리 헤더 바 */
+.cat-bar{color:#fff;padding:9px 18px;margin:22px 0 12px;border-radius:6px;font-size:16px;font-weight:800}
+.cb-sec{background:linear-gradient(90deg,#b71c1c,#c62828)}
+.cb-rel{background:linear-gradient(90deg,#0d47a1,#1565c0)}
+.cb-mnt{background:linear-gradient(90deg,#1b5e20,#2e7d32)}
+.cb-hot{background:linear-gradient(90deg,#4a148c,#6a1b9a)}
+.cb-acc{background:linear-gradient(90deg,#263238,#37474f)}
+.cb-cov{background:linear-gradient(90deg,#004d40,#00695c)}
+.cb-dup{background:linear-gradient(90deg,#3e2723,#4e342e)}
+
+/* 안전항목 */
+.safe-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:9px}
+.safe-item{background:#e8f5e9;border:1px solid #c8e6c9;border-radius:6px;padding:9px 13px;font-size:13px}
+
+/* 카테고리별 건수 요약표 */
+.count-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.count-tbl th,.count-tbl td{border:1px solid #e0e0e0;padding:8px 14px;text-align:center}
+.count-tbl th{background:#37474f;color:#fff}
+.count-tbl td:first-child{text-align:left;font-weight:700}
+.count-tbl tr:nth-child(odd){background:#fafafa}
+.count-tbl td.occ-cnt{background:#e8eaf6;font-weight:800;color:#1a237e;font-size:17px}
+.count-tbl th.occ-hd{background:#283593;font-size:14px;letter-spacing:.3px}
+.occ-badge{display:inline-block;min-width:28px;padding:1px 7px;border-radius:10px;background:#283593;color:#fff;font-size:12px;font-weight:700;text-align:center}
+.count-tbl th.blk-hd{background:#6a0dad}
+.count-tbl th.crt-hd{background:#c62828}
+.count-tbl td.blk-val{color:#6a0dad;font-weight:700}
+.count-tbl td.crt-val{color:#c62828;font-weight:700}
+
+.footer{text-align:center;padding:28px;color:#78909c;font-size:12px;border-top:1px solid #e0e0e0;margin-top:10px}
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+  [SECTION 1] 헤더
+  교체 항목: PROJECT_NAME, INSPECT_DATE, TARGET_DESC, AI_MODEL, PROMPT_VERSION
+  ================================================================ -->
+<div class="header">
+  <h1>🔐 {{PROJECT_NAME}} 시큐어코딩 점검 결과 보고서 (v4)</h1>
+  <div class="sub">BKR_시큐어코딩_진단_프롬프트_v4 기준 · SonarQube 7개 카테고리 분류 체계 적용</div>
+  <div class="header-meta">
+    <span>📁 대상: {{TARGET_DESC}}</span>
+    <span>📅 점검일: {{INSPECT_DATE}}</span>
+    <span>🤖 분석: {{AI_MODEL}}</span>
+    <span>📋 기준: 행안부 SW개발보안가이드 2021 · OWASP Top10 2021 · CWE</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ================================================================
+  [SECTION 2] 분석 카테고리 및 심각도 등급 안내
+  이 섹션은 고정 내용입니다. 수정하지 마세요.
+  ================================================================ -->
+<div class="section">
+  <div class="sec-title">📖 분석 카테고리 및 심각도 등급 안내</div>
+  <div class="sec-body">
+
+    <p style="font-size:13px;color:#546e7a;margin-bottom:16px">
+      이 보고서는 SonarQube 7개 카테고리 분류 체계를 기준으로 작성되었습니다.<br>
+      각 항목의 <strong>카테고리(어떤 종류의 문제인가)</strong>와 <strong>심각도(얼마나 긴급한가)</strong>를 먼저 파악한 뒤 상세 결과를 확인하시기 바랍니다.
+    </p>
+
+    <!-- 7대 카테고리 표 -->
+    <div style="font-size:15px;font-weight:800;color:#263238;margin-bottom:10px">▌ 7대 분석 카테고리</div>
+    <table class="tbl" style="margin-bottom:20px">
+      <thead><tr>
+        <th style="width:160px">카테고리</th>
+        <th>정의</th>
+        <th style="width:230px">주요 대상 예시</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="cat-badge c-sec">Security</span><br><span style="font-size:11px;color:#666">보안 취약점</span></td>
+          <td>인증·인가 우회, SQL 인젝션, 암호화 결함, XSS, 파일 업로드 취약점 등 직접적 보안 결함. <strong>가장 높은 우선순위</strong>로 처리 필요.</td>
+          <td class="mono" style="font-size:11px">JwtFilter, SecurityConfig, SQL Mapper, 암호화 유틸</td>
+        </tr>
+        <tr>
+          <td><span class="cat-badge c-rel">Reliability</span><br><span style="font-size:11px;color:#666">신뢰성 결함</span></td>
+          <td>NullPointerException, 자원 누수(Connection/Stream 미닫힘), 예외 처리 미흡, 동시성 문제 등 런타임 오류를 유발하는 결함.</td>
+          <td class="mono" style="font-size:11px">Service, DAO, Filter, try-catch 블록</td>
+        </tr>
+        <tr>
+          <td><span class="cat-badge c-mnt">Maintainability</span><br><span style="font-size:11px;color:#666">유지보수성(Code Smell)</span></td>
+          <td>높은 인지복잡도, 과도하게 긴 메서드, 리터럴 오용 등 코드 품질 문제. 보안 결함은 아니나 유지보수를 어렵게 하여 간접적 위험 증가.</td>
+          <td class="mono" style="font-size:11px">복잡 메서드, 중복 블록, TODO 잔여 주석</td>
+        </tr>
+        <tr>
+          <td><span class="cat-badge c-hot">Security Hotspots</span><br><span style="font-size:11px;color:#666">보안 검토 필요 지점</span></td>
+          <td>취약점으로 확정되지 않았으나 반드시 사람이 검토해야 할 지점. <em>"취약하다"가 아닌 "이 지점은 반드시 검토하세요"</em>의 의미. HIGH / MEDIUM / LOW 등급 사용.</td>
+          <td class="mono" style="font-size:11px">암호화 알고리즘 선택, 외부 URL 호출, 권한 검사 로직</td>
+        </tr>
+        <tr>
+          <td><span class="cat-badge c-acc">Accepted Issues</span><br><span style="font-size:11px;color:#666">인지된 위험/허용 항목</span></td>
+          <td>의도적으로 허용한 위험, 레거시 호환 불가 항목, 기술부채로 관리 중인 항목. WONT_FIX / TECHNICAL_DEBT / FALSE_POSITIVE 로 분류하며 <strong>반드시 허용 근거와 재검토 시점을 문서화</strong>해야 함.</td>
+          <td class="mono" style="font-size:11px">CSRF disable (JWT 전용), 레거시 MD5 (마이그레이션 예정)</td>
+        </tr>
+        <tr>
+          <td><span class="cat-badge c-cov">Coverage</span><br><span style="font-size:11px;color:#666">테스트 커버리지 부재</span></td>
+          <td>보안 로직·인증·인가·입력 검증 메서드에 단위 테스트가 없는 영역. 보안 패치 후 회귀 검증이 불가능한 상태를 나타냄.</td>
+          <td class="mono" style="font-size:11px">JwtFilter, Passwdcrypt, FileService 검증 로직</td>
+        </tr>
+        <tr>
+          <td><span class="cat-badge c-dup">Duplications</span><br><span style="font-size:11px;color:#666">코드 중복</span></td>
+          <td>동일·유사 코드 블록이 여러 위치에 존재. 특히 <strong>보안 검증 로직 중복 시 패치 누락 위험</strong>이 높음 (한 곳만 수정 시 다른 곳에 취약점 잔존).</td>
+          <td class="mono" style="font-size:11px">로그인 검증, IP 접근 제어, JWT 파싱 로직 중복</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 심각도 등급 표 -->
+    <div style="font-size:15px;font-weight:800;color:#263238;margin-bottom:10px">▌ 심각도(Severity) 등급 — 공통 기준</div>
+    <table class="tbl" style="margin-bottom:10px">
+      <thead><tr>
+        <th style="width:120px">등급</th>
+        <th style="width:120px">대응 기한</th>
+        <th>의미 및 기준</th>
+        <th style="width:260px">대표 예시</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge b-blocker">BLOCKER</span></td>
+          <td style="text-align:center;font-weight:700;color:#6a0dad">즉시 / 배포 중단</td>
+          <td>악용 시 시스템 전체가 위협받는 수준. 발견 즉시 배포 중단 및 긴급 수정 필요.</td>
+          <td class="mono" style="font-size:11px">인증 완전 우회, 원격 코드 실행, DB 전체 노출</td>
+        </tr>
+        <tr>
+          <td><span class="badge b-critical">CRITICAL</span></td>
+          <td style="text-align:center;font-weight:700;color:#c62828">24시간 이내</td>
+          <td>인증·인가·민감정보에 직접 영향을 주는 심각한 결함. 즉시 수정하지 않으면 데이터 침해 발생 가능.</td>
+          <td class="mono" style="font-size:11px">SQL Injection, 하드코딩 자격증명, 취약 암호화</td>
+        </tr>
+        <tr>
+          <td><span class="badge b-major">MAJOR</span></td>
+          <td style="text-align:center;font-weight:700;color:#e65100">7일 이내</td>
+          <td>조건부 악용 가능하거나 중요 데이터에 위협이 되는 결함. 단기 내 반드시 수정 필요.</td>
+          <td class="mono" style="font-size:11px">CORS 과다 허용, CSRF 미적용, XSS 가능, 자원 누수</td>
+        </tr>
+        <tr>
+          <td><span class="badge b-minor">MINOR</span></td>
+          <td style="text-align:center;font-weight:700;color:#f57f17">30일 이내</td>
+          <td>방어 심층화 미흡 또는 잠재적 오작동 가능성. 단독 악용은 어려우나 중기 내 개선 필요.</td>
+          <td class="mono" style="font-size:11px">민감정보 로그 기록, 보안 헤더 누락</td>
+        </tr>
+        <tr>
+          <td><span class="badge b-info">INFO</span></td>
+          <td style="text-align:center;font-weight:700;color:#546e7a">90일 이내</td>
+          <td>보안·품질 모범사례 미준수 수준. 장기 개선 과제로 관리.</td>
+          <td class="mono" style="font-size:11px">디버그 로그 잔존, 보안 주석 누락</td>
+        </tr>
+        <tr style="background:#f3e5f5">
+          <td><span class="badge b-high">HIGH</span> / <span class="badge b-medium">MEDIUM</span> / <span class="badge" style="background:#546e7a">LOW</span></td>
+          <td style="text-align:center;font-weight:700;color:#6a1b9a">Hotspots 전용</td>
+          <td>Security Hotspots 전용 등급. 취약 여부 미확정, 사람이 직접 검토 후 FIXED / SAFE / BLOCKER~INFO로 상태 전환 필요.</td>
+          <td class="mono" style="font-size:11px">암호화 알고리즘 선택, 외부 URL 호출, 권한 검사</td>
+        </tr>
+        <tr style="background:#e8f5e9">
+          <td><span class="badge b-ok">WONT_FIX</span><br><span class="badge b-review">TECH_DEBT</span></td>
+          <td style="text-align:center;font-weight:700;color:#2e7d32">Accepted 전용</td>
+          <td>Accepted Issues 전용 분류. 의도적 허용(WONT_FIX) 또는 기술부채 계획(TECHNICAL_DEBT). 반드시 근거 주석 및 재검토 일자 명시.</td>
+          <td class="mono" style="font-size:11px">CSRF disable(JWT 전용), 레거시 MD5 유지</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="font-size:12px;color:#78909c;margin-top:6px">
+      ※ BLOCKER + CRITICAL = <strong>즉시 수정 대상</strong> &nbsp;|&nbsp;
+      Security Hotspots는 취약점 확정 전 검토 단계이므로 별도 심각도(HIGH/MEDIUM/LOW) 적용 &nbsp;|&nbsp;
+      Accepted Issues는 허용 근거 문서화가 완료된 경우에만 해당 분류 사용
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+  [SECTION 3] 카테고리별 점검 결과 요약
+  교체 항목:
+    - 카드 박스 7개 숫자: SEC_RULE, REL_RULE, MNT_RULE, HOT_RULE, ACC_RULE, COV_RULE, DUP_RULE
+    - count-tbl 각 행의 심각도별 건수 및 합계(RULE), 발생건수
+    - 하단 즉시수정 건수 안내 문구
+  ================================================================ -->
+<div class="section">
+  <div class="sec-title">📊 카테고리별 점검 결과 요약</div>
+  <div class="sec-body">
+
+    <!-- 카드 박스: 숫자는 RULE 수(위반 규칙 종류), 탐지 발생건수 아님 -->
+    <div class="stat-grid">
+      <div class="stat-card s-sec"><div class="stat-sublbl">RULE 수</div><div class="stat-num">{{SEC_RULE}}</div><div class="stat-lbl">Security</div></div>
+      <div class="stat-card s-rel"><div class="stat-sublbl">RULE 수</div><div class="stat-num">{{REL_RULE}}</div><div class="stat-lbl">Reliability</div></div>
+      <div class="stat-card s-mnt"><div class="stat-sublbl">RULE 수</div><div class="stat-num">{{MNT_RULE}}</div><div class="stat-lbl">Maintainability</div></div>
+      <div class="stat-card s-hot"><div class="stat-sublbl">RULE 수</div><div class="stat-num">{{HOT_RULE}}</div><div class="stat-lbl">Security Hotspots</div></div>
+      <div class="stat-card s-acc"><div class="stat-sublbl">RULE 수</div><div class="stat-num">{{ACC_RULE}}</div><div class="stat-lbl">Accepted Issues</div></div>
+      <div class="stat-card s-cov"><div class="stat-sublbl">RULE 수</div><div class="stat-num">{{COV_RULE}}</div><div class="stat-lbl">Coverage</div></div>
+      <div class="stat-card s-dup"><div class="stat-sublbl">RULE 수</div><div class="stat-num">{{DUP_RULE}}</div><div class="stat-lbl">Duplications</div></div>
+    </div>
+
+    <div style="font-size:12px;color:#546e7a;margin-bottom:8px">
+      ※ 위 카드의 숫자는 <strong>RULE 수</strong>(고유 위반 규칙 종류) — 실제 위반 발생 위치 합산인 <strong>발생건수(SonarQube 기준)</strong>는 아래 표 마지막 컬럼 참조
+    </div>
+
+    <!-- 카테고리별 건수 집계 표 -->
+    <table class="count-tbl">
+      <thead><tr>
+        <th>카테고리</th>
+        <th class="blk-hd">BLOCKER</th>
+        <th class="crt-hd">CRITICAL</th>
+        <th>MAJOR</th><th>MINOR</th><th>INFO</th>
+        <th>계(RULE)</th>
+        <th class="occ-hd">발생건수</th>
+      </tr></thead>
+      <tbody>
+        <!-- Security 행 -->
+        <tr>
+          <td>🔴 Security<br><span style="font-size:11px;color:#666">보안 취약점</span></td>
+          <td class="blk-val">{{SEC_BLK}}</td><td class="crt-val">{{SEC_CRT}}</td>
+          <td>{{SEC_MAJ}}</td><td>{{SEC_MIN}}</td><td>{{SEC_INF}}</td>
+          <td>{{SEC_RULE}}</td>
+          <td class="occ-cnt"><strong>{{SEC_OCC}}</strong></td>
+        </tr>
+        <!-- Reliability 행 -->
+        <tr>
+          <td>🔵 Reliability<br><span style="font-size:11px;color:#666">신뢰성 결함</span></td>
+          <td class="blk-val">{{REL_BLK}}</td><td class="crt-val">{{REL_CRT}}</td>
+          <td>{{REL_MAJ}}</td><td>{{REL_MIN}}</td><td>{{REL_INF}}</td>
+          <td>{{REL_RULE}}</td>
+          <td class="occ-cnt"><strong>{{REL_OCC}}</strong></td>
+        </tr>
+        <!-- Maintainability 행 -->
+        <tr>
+          <td>🟢 Maintainability<br><span style="font-size:11px;color:#666">유지보수성(Code Smell)</span></td>
+          <td class="blk-val">{{MNT_BLK}}</td><td class="crt-val">{{MNT_CRT}}</td>
+          <td>{{MNT_MAJ}}</td><td>{{MNT_MIN}}</td><td>{{MNT_INF}}</td>
+          <td>{{MNT_RULE}}</td>
+          <td class="occ-cnt"><strong>{{MNT_OCC}}</strong></td>
+        </tr>
+        <!-- Security Hotspots 행 -->
+        <tr>
+          <td>🟣 Security Hotspots<br><span style="font-size:11px;color:#666">보안 검토 필요 지점</span></td>
+          <td colspan="2">HIGH: {{HOT_HIGH}}</td>
+          <td colspan="2">MEDIUM: {{HOT_MED}}</td>
+          <td>LOW: {{HOT_LOW}}</td>
+          <td>{{HOT_RULE}}</td>
+          <td class="occ-cnt"><strong>{{HOT_OCC}}</strong></td>
+        </tr>
+        <!-- Accepted Issues 행 -->
+        <tr>
+          <td>⚫ Accepted Issues<br><span style="font-size:11px;color:#666">인지된 위험/허용 항목</span></td>
+          <td colspan="5">TECHNICAL_DEBT: {{ACC_TD}} / WONT_FIX: {{ACC_WF}}</td>
+          <td>{{ACC_RULE}}</td>
+          <td class="occ-cnt"><strong>{{ACC_OCC}}</strong></td>
+        </tr>
+        <!-- Coverage 행 -->
+        <tr>
+          <td>🟦 Coverage<br><span style="font-size:11px;color:#666">테스트 커버리지 부재</span></td>
+          <td class="blk-val">{{COV_BLK}}</td><td class="crt-val">{{COV_CRT}}</td>
+          <td>{{COV_MAJ}}</td><td>—</td><td>—</td>
+          <td>{{COV_RULE}}</td>
+          <td class="occ-cnt"><strong>{{COV_OCC}}</strong></td>
+        </tr>
+        <!-- Duplications 행 -->
+        <tr>
+          <td>🟤 Duplications<br><span style="font-size:11px;color:#666">코드 중복</span></td>
+          <td class="blk-val">{{DUP_BLK}}</td><td class="crt-val">{{DUP_CRT}}</td>
+          <td>{{DUP_MAJ}}</td><td>—</td><td>—</td>
+          <td>{{DUP_RULE}}</td>
+          <td class="occ-cnt"><strong>{{DUP_OCC}}</strong></td>
+        </tr>
+        <!-- 총계 행 -->
+        <tr style="background:#eceff1;font-weight:700">
+          <td>총계</td>
+          <td class="blk-val">{{TOT_BLK}}</td><td class="crt-val">{{TOT_CRT}}</td>
+          <td>{{TOT_MAJ}}</td><td>{{TOT_MIN}}</td><td>{{TOT_INF}}</td>
+          <td>{{TOT_RULE}}</td>
+          <td class="occ-cnt" style="font-size:16px"><strong>{{TOT_OCC}}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:12px;font-size:13px;color:#546e7a">
+      ※ <strong>즉시 수정 필요(BLOCKER+CRITICAL 발생건수)</strong>: Security 기준
+      <span class="occ-badge">{{SEC_OCC}}건</span> &nbsp;|&nbsp;
+      단기 수정(MAJOR): {{TOT_MAJ}} RULE &nbsp;|&nbsp;
+      Security Hotspots: {{HOT_OCC}}건(TO_REVIEW)
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+  [SECTION 4] 수정 우선순위 요약표
+  교체 항목: 각 tr 행 전체 (번호/카테고리/심각도/RULE-ID/취약점명/파일/CWE/발생건수)
+  규칙:
+    - RULE-ID 셀: <td><a href="#RULE-ID" class="rule-link">RULE-ID</a></td>
+    - 발생건수 셀: <td style="text-align:center"><span class="occ-badge">N</span></td>
+    - Security 소계 행: <tr style="background:#e8eaf6"> 유지
+  ================================================================ -->
+<div class="section">
+  <div class="sec-title">📋 수정 우선순위 요약표</div>
+  <div class="sec-body" style="overflow-x:auto">
+    <div style="font-size:12px;color:#546e7a;margin-bottom:6px">
+      ※ <strong>발생건수</strong>: 파일·라인 단위 위반 위치를 1건으로 집계 (SonarQube 방식) &nbsp;|&nbsp; RULE 1개가 여러 파일·라인에 위반된 경우 각각 카운트
+    </div>
+    <table class="tbl">
+      <thead><tr>
+        <th>#</th><th>카테고리</th><th>심각도</th>
+        <th style="white-space:nowrap">RULE-ID</th>
+        <th>취약점명</th><th>파일</th><th>CWE</th>
+        <th style="background:#283593;text-align:center">발생건수</th>
+      </tr></thead>
+      <tbody>
+        <!-- ── Security 항목들 ──────────────────────────────────────
+          예시 행 (실제 데이터로 교체):
+          <tr>
+            <td>1</td>
+            <td><span class="cat-badge c-sec">Security</span></td>
+            <td><span class="badge b-blocker">BLOCKER</span></td>
+            <td><a href="#RULE-ID" class="rule-link">RULE-ID</a></td>
+            <td>취약점명</td>
+            <td class="mono">파일명.java</td>
+            <td>CWE-000</td>
+            <td style="text-align:center"><span class="occ-badge">N</span></td>
+          </tr>
+        -->
+        {{PRIORITY_TABLE_ROWS}}
+
+        <!-- Security 소계 행 (Security 항목 마지막에 삽입) -->
+        <tr style="background:#e8eaf6">
+          <td colspan="7" style="text-align:right;font-weight:700;color:#1a237e;font-size:13px">Security 발생건수 소계</td>
+          <td style="text-align:center"><span class="occ-badge" style="font-size:14px">{{SEC_OCC}}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================
+  [SECTION 5~11] 카테고리별 상세 분석
+  각 카테고리 섹션 구조:
+    <div class="cat-bar cb-XXX">이모지 CategoryName — 상세 분석</div>
+    <div id="RULE-ID" class="issue cat-XXX">
+      <div class="issue-hd">
+        <div><span class="cat-badge c-XXX">Category</span> <span class="badge b-SEVERITY">SEVERITY</span>
+             <span class="mono" style="font-size:12px;background:#455a64;color:#fff;padding:2px 7px;border-radius:4px">RULE-ID</span></div>
+        <div class="issue-title" style="margin-left:8px">취약점 제목</div>
+      </div>
+      <div class="issue-bd">
+        <div class="issue-meta">
+          <div class="meta"><strong>파일:</strong> 파일명</div>
+          <div class="meta"><strong>CWE:</strong> CWE-000</div>
+          <div class="meta"><strong>OWASP:</strong> A00:2021</div>  ← 해당 시
+        </div>
+        <pre class="code">
+          <span class="cm">// 설명 주석</span>
+          <span class="bad">// 문제 코드</span>
+          <span class="ok">// 수정 코드</span>
+        </pre>
+        <div class="impact">🚨 <strong>위험:</strong> 위험 설명</div>  ← 선택
+        <div class="fix"><strong>✅ 수정:</strong> 수정 방법
+          <ul><li>항목1</li><li>항목2</li></ul>
+        </div>
+      </div>
+    </div>
+  ================================================================ -->
+
+<!-- ===== SECURITY ===== -->
+<div class="cat-bar cb-sec">🔴 Security — 상세 분석</div>
+{{SECURITY_ISSUES}}
+
+<!-- ===== RELIABILITY ===== -->
+<div class="cat-bar cb-rel">🔵 Reliability — 상세 분석</div>
+{{RELIABILITY_ISSUES}}
+
+<!-- ===== MAINTAINABILITY ===== -->
+<div class="cat-bar cb-mnt">🟢 Maintainability — 상세 분석</div>
+{{MAINTAINABILITY_ISSUES}}
+
+<!-- ===== SECURITY HOTSPOTS ===== -->
+<div class="cat-bar cb-hot">🟣 Security Hotspots — 검토 필요 항목 (TO_REVIEW)</div>
+<!-- ── Hotspots는 테이블 형식 사용 ──────────────────────────────
+  <div class="section cat-hot">
+    <div class="sec-title">Security Hotspots 목록</div>
+    <div class="sec-body">
+      <table class="tbl">
+        <thead><tr><th>ID</th><th>등급</th><th>상태</th><th>검토 포인트</th><th>파일</th><th>안전 확인 방법</th></tr></thead>
+        <tbody>
+          <tr id="HOT-01">
+            <td class="mono">HOT-01</td>
+            <td><span class="badge b-high">HIGH</span></td>
+            <td><span class="badge b-review">TO_REVIEW</span></td>
+            <td>검토 포인트</td>
+            <td class="mono">파일명</td>
+            <td>안전 확인 방법</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+-->
+{{HOTSPOTS_SECTION}}
+
+<!-- ===== ACCEPTED ISSUES ===== -->
+<div class="cat-bar cb-acc">⚫ Accepted Issues — 인지된 위험 / 기술부채</div>
+<!-- ── Accepted는 테이블 형식 사용 ────────────────────────────
+  <div class="section cat-acc">
+    <div class="sec-title">Accepted Issues 목록</div>
+    <div class="sec-body">
+      <table class="tbl">
+        <thead><tr><th>분류</th><th>항목</th><th>현재 근거</th><th>필요 조치</th></tr></thead>
+        <tbody>
+          <tr id="ACC-01">
+            <td><span class="badge b-info">WONT_FIX</span></td>
+            <td>항목명</td><td>허용 근거</td><td>필요 조치</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+-->
+{{ACCEPTED_SECTION}}
+
+<!-- ===== COVERAGE ===== -->
+<div class="cat-bar cb-cov">🟦 Coverage — 테스트 부재 영역</div>
+<!-- ── Coverage는 테이블 형식 사용 ───────────────────────────
+  <div class="section cat-cov">
+    <div class="sec-title">보안 핵심 로직 테스트 부재</div>
+    <div class="sec-body">
+      <table class="tbl">
+        <thead><tr><th>심각도</th><th>대상 파일/메서드</th><th>누락된 테스트 케이스</th></tr></thead>
+        <tbody>
+          <tr id="COV-01"><td><span class="badge b-blocker">BLOCKER</span></td><td class="mono">파일명</td><td>내용</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+-->
+{{COVERAGE_SECTION}}
+
+<!-- ===== DUPLICATIONS ===== -->
+<div class="cat-bar cb-dup">🟤 Duplications — 코드 중복</div>
+<!-- ── Duplications는 테이블 형식 사용 ──────────────────────
+  <div class="section cat-dup">
+    <div class="sec-title">코드 중복 목록</div>
+    <div class="sec-body">
+      <table class="tbl">
+        <thead><tr><th>심각도</th><th>중복 내용</th><th>위치</th><th>위험</th></tr></thead>
+        <tbody>
+          <tr id="DUP-01"><td><span class="badge b-blocker">BLOCKER</span></td><td>내용</td><td class="mono">위치</td><td>위험 설명</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+-->
+{{DUPLICATIONS_SECTION}}
+
+<!-- ================================================================
+  [SECTION 12] 보안 모범사례 준수 확인
+  교체 항목: safe-item 목록 (잘 구현된 항목)
+  ================================================================ -->
+<div class="section">
+  <div class="sec-title">✅ 보안 모범사례 준수 확인 항목</div>
+  <div class="sec-body">
+    <div class="safe-grid">
+      {{SAFE_ITEMS}}
+      <!-- 예시: <div class="safe-item">✅ 항목 설명</div> -->
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+  [SECTION 13] 즉시 조치 필요 항목 요약
+  교체 항목: BLOCKER/CRITICAL/MAJOR 항목 목록
+  ================================================================ -->
+<div class="section">
+  <div class="sec-title">🎯 즉시 조치 필요 항목 요약 (BLOCKER + CRITICAL)</div>
+  <div class="sec-body">
+    <div style="background:#fce4ec;border-left:4px solid #c62828;border-radius:4px;padding:14px 18px;margin-bottom:14px">
+      <strong style="color:#c62828;font-size:15px">BLOCKER — 즉시 조치 (오늘 중)</strong>
+      <ol style="margin-top:8px;padding-left:20px;line-height:2.2">
+        {{BLOCKER_ITEMS}}
+      </ol>
+    </div>
+    <div style="background:#fff3e0;border-left:4px solid #e65100;border-radius:4px;padding:14px 18px;margin-bottom:14px">
+      <strong style="color:#e65100;font-size:15px">CRITICAL — 24시간 이내</strong>
+      <ol style="margin-top:8px;padding-left:20px;line-height:2.2">
+        {{CRITICAL_ITEMS}}
+      </ol>
+    </div>
+    <div style="background:#e8f5e9;border-left:4px solid #43a047;border-radius:4px;padding:14px 18px">
+      <strong style="color:#2e7d32;font-size:15px">MAJOR — 7일 이내</strong>
+      <ol style="margin-top:8px;padding-left:20px;line-height:2.2">
+        {{MAJOR_ITEMS}}
+      </ol>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+  [SECTION 14] 푸터
+  교체 항목: PROJECT_NAME, INSPECT_DATE, AI_MODEL
+  ================================================================ -->
+<div class="footer">
+  {{PROJECT_NAME}} 시큐어코딩 점검 결과 보고서 v4 · 점검일: {{INSPECT_DATE}}<br>
+  분석 도구: {{AI_MODEL}} · 프롬프트: BKR_시큐어코딩_진단_프롬프트_v4.txt<br>
+  분류 체계: SonarQube 7개 카테고리 (Security / Reliability / Maintainability / Accepted Issues / Coverage / Duplications / Security Hotspots)<br>
+  기준: 행정안전부 SW개발보안가이드(2021.12.29) · OWASP Top 10 2021 · CWE
+</div>
+
+</div><!-- /wrap -->
+</body>
+</html>

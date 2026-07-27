@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>BKR IT 표준 준수 점검 결과 보고서</title>
+</head>
+<body>
+<!-- BKR IT 표준 준수 점검 결과 템플릿 v1.0 -->
+<!-- Claude Code가 violations 데이터를 이 템플릿에 채워 result.html로 저장 -->
+
+<h1>BKR IT 표준 준수 점검 결과</h1>
+<p>점검일시: {{inspection_date}}</p>
+<p>점검 대상: {{target_source}}</p>
+
+<h2>요약</h2>
+<table>
+  <tr><th>전체 파일</th><td>{{total_files}}</td></tr>
+  <tr><th>위반 건수</th><td>{{violation_count}}</td></tr>
+  <tr><th>Critical</th><td>{{critical}}</td></tr>
+  <tr><th>High</th><td>{{high}}</td></tr>
+  <tr><th>Medium</th><td>{{medium}}</td></tr>
+  <tr><th>Low</th><td>{{low}}</td></tr>
+</table>
+
+<h2>위반 목록</h2>
+<!-- violations 배열 반복 렌더링 -->
+{{#each violations}}
+<div class="violation">
+  <p><strong>파일:</strong> {{file}} ({{line}}번 줄)</p>
+  <p><strong>유형:</strong> {{type}} | <strong>심각도:</strong> {{severity}}</p>
+  <p><strong>내용:</strong> {{description}}</p>
+  <p><strong>권고:</strong> {{recommendation}}</p>
+</div>
+{{/each}}
+
+</body>
+</html>

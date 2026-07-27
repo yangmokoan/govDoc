@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>BKR 테스트 케이스 자동 생성 결과 보고서</title>
+</head>
+<body>
+<!-- BKR 테스트 케이스 자동 생성 결과 템플릿 v1.0 -->
+<!-- Claude Code가 generated 데이터를 이 템플릿에 채워 result.html로 저장 -->
+
+<h1>BKR 테스트 케이스 자동 생성 결과</h1>
+<p>생성일시: {{generated_date}}</p>
+<p>점검 대상: {{target_source}}</p>
+
+<h2>요약</h2>
+<table>
+  <tr><th>분석 Service 파일 수</th><td>{{total_service_files}}</td></tr>
+  <tr><th>분석 메서드 수</th><td>{{total_methods}}</td></tr>
+  <tr><th>생성된 테스트 케이스 수</th><td>{{generated_test_count}}</td></tr>
+  <tr><th>정상 케이스</th><td>{{happy_path_count}}</td></tr>
+  <tr><th>예외 케이스</th><td>{{exception_case_count}}</td></tr>
+</table>
+
+<h2>생성 파일 목록</h2>
+{{#each generated}}
+<div class="generated-item">
+  <p><strong>원본:</strong> {{source_file}}</p>
+  <p><strong>생성:</strong> {{test_file}}</p>
+  <p>메서드 {{method_count}}개 → 테스트 {{test_case_count}}건 생성</p>
+</div>
+{{/each}}
+
+</body>
+</html>

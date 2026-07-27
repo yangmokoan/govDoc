@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>[ADMIN] 시스템관리 - 시퀀스관리 거버넌스 보고서</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Malgun Gothic', sans-serif; font-size: 13px; background: #f5f6fa; color: #333; }
+.header { background: #1a3a5c; color: white; padding: 16px 24px; }
+.header h1 { font-size: 20px; }
+.header .subtitle { font-size: 12px; opacity: 0.8; margin-top: 4px; }
+.container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+.toc { background: white; border-radius: 8px; padding: 16px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+.toc h2 { font-size: 14px; margin-bottom: 8px; color: #1a3a5c; border-bottom: 2px solid #1a3a5c; padding-bottom: 4px; }
+.toc a { color: #1a3a5c; text-decoration: none; display: block; padding: 2px 0; font-size: 12px; }
+.section { background: white; border-radius: 8px; padding: 20px; margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+.section-title { font-size: 16px; font-weight: bold; color: #1a3a5c; border-left: 4px solid #1a3a5c; padding-left: 10px; margin-bottom: 16px; }
+table.ep { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12px; }
+table.ep th { background: #1a3a5c; color: white; padding: 7px 10px; }
+table.ep td { border: 1px solid #ddd; padding: 6px 10px; }
+table.ep tr:nth-child(even) td { background: #f9f9f9; }
+.m-get{background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;}
+.m-post{background:#007bff;color:white;padding:2px 6px;border-radius:3px;font-size:11px;}
+.m-put{background:#fd7e14;color:white;padding:2px 6px;border-radius:3px;font-size:11px;}
+.m-del{background:#dc3545;color:white;padding:2px 6px;border-radius:3px;font-size:11px;}
+.sql-block { margin-bottom: 20px; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; }
+.sql-head { background: #f0f4f8; padding: 9px 14px; border-bottom: 1px solid #ddd; display:flex; justify-content:space-between; align-items:center; }
+.sql-id { font-weight: bold; color: #1a3a5c; font-size: 13px; }
+.badges { display:flex; gap:5px; flex-wrap:wrap; }
+.b-c{background:#ffeaea;color:#c0392b;border:1px solid #f5c6cb;font-size:11px;padding:2px 7px;border-radius:10px;font-weight:bold;}
+.b-w{background:#fff8e1;color:#856404;border:1px solid #ffc107;font-size:11px;padding:2px 7px;border-radius:10px;font-weight:bold;}
+.b-ok{background:#e8f5e9;color:#155724;border:1px solid #c3e6cb;font-size:11px;padding:2px 7px;border-radius:10px;font-weight:bold;}
+.sql-panels { display:flex; }
+.panel { flex:1; border-right:1px solid #ddd; }
+.panel:last-child { border-right:none; }
+.panel-title { padding:6px 12px; font-size:12px; font-weight:bold; }
+.panel-title.cur { background:#ffeaea; color:#c0392b; }
+.panel-title.fix { background:#e8f5e9; color:#155724; }
+pre { padding:12px; font-size:11px; line-height:1.6; overflow-x:auto; white-space:pre; font-family:Consolas,monospace; margin:0; background:#fafafa; }
+.note { background:#fff3cd; border-left:4px solid #ffc107; padding:9px 14px; margin-top:8px; font-size:12px; }
+.note-ok { background:#e8f5e9; border-left:4px solid #28a745; padding:9px 14px; margin-top:8px; font-size:12px; }
+.summary-table { width:100%; border-collapse:collapse; font-size:12px; margin-top:12px; }
+.summary-table th { background:#f0f4f8; padding:7px; border:1px solid #ddd; }
+.summary-table td { padding:6px 10px; border:1px solid #ddd; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>[ADMIN] 시스템관리 - 시퀀스관리 거버넌스 점검 보고서</h1>
+  <div class="subtitle">BKR CRM 시스템 | SQL 거버넌스 준수 현황 | 점검일: 2026-06-30</div>
+</div>
+<div class="container">
+
+  <!-- TOC -->
+  <div class="toc">
+    <h2>목차</h2>
+    <a href="#controller">1. Controller 엔드포인트</a>
+    <a href="#seq-mapper">2. SequenceManagerMapper.xml</a>
+    <a href="#summary">3. 종합 요약</a>
+  </div>
+
+  <!-- 1. Controller -->
+  <div class="section" id="controller">
+    <div class="section-title">1. Controller 엔드포인트</div>
+    <table class="ep">
+      <thead>
+        <tr>
+          <th>화면 ID</th>
+          <th>메서드</th>
+          <th>URL</th>
+          <th>설명</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>SYS0050001</td><td><span class="m-get">GET</span></td><td>/SYS0050001/view.go</td><td>시퀀스 목록 화면</td></tr>
+        <tr><td>SYS0050001</td><td><span class="m-get">GET</span></td><td>/SYS0050001/list.ajax</td><td>시퀀스 목록 조회</td></tr>
+        <tr><td>SYS0050001</td><td><span class="m-del">DELETE</span></td><td>/SYS0050001/delete.ajax</td><td>시퀀스 삭제</td></tr>
+        <tr><td>SYS0050002</td><td><span class="m-get">GET</span></td><td>/SYS0050002/view.go</td><td>시퀀스 상세/등록 화면</td></tr>
+        <tr><td>SYS0050002</td><td><span class="m-post">POST</span></td><td>/SYS0050002/save.ajax</td><td>시퀀스 등록 처리</td></tr>
+        <tr><td>SYS0050003</td><td><span class="m-get">GET</span></td><td>/SYS0050003/view.go</td><td>시퀀스 수정 화면</td></tr>
+        <tr><td>SYS0050003</td><td><span class="m-post">POST</span></td><td>/SYS0050003/update.ajax</td><td>시퀀스 수정 처리</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 2. SequenceManagerMapper -->
+  <div class="section" id="seq-mapper">
+    <div class="section-title">2. SequenceManagerMapper.xml</div>
+
+    <!-- getSequenceList -->
+    <div class="sql-block">
+      <div class="sql-head">
+        <span class="sql-id">getSequenceList</span>
+        <div class="badges">
+          <span class="b-w">⚠ WHERE 1=1</span>
+          <span class="b-ok">✓ LIMIT/OFFSET</span>
+          <span class="b-ok">✓ 바인드변수 #{}</span>
+        </div>
+      </div>
+      <div class="sql-panels">
+        <div class="panel">
+          <div class="panel-title cur">현재 (Warning)</div>
+          <pre>SELECT *
+FROM TB_SEQ_MST
+WHERE 1=1
+<if test="seqNm != null and seqNm != ''">
+  AND SEQ_NM LIKE '%' || #{seqNm} || '%'
+</if>
+<if test="useYn != null and useYn != ''">
+  AND USE_YN = #{useYn}
+</if>
+ORDER BY SEQ_NM
+LIMIT #{pageSize} OFFSET #{offset}</pre>
+        </div>
+        <div class="panel">
+          <div class="panel-title fix">수정 예시 (권고)</div>
+          <pre>SELECT *
+FROM TB_SEQ_MST
+&lt;where&gt;
+  &lt;if test="seqNm != null and seqNm != ''"&gt;
+    AND SEQ_NM LIKE '%' || #{seqNm} || '%'
+  &lt;/if&gt;
+  &lt;if test="useYn != null and useYn != ''"&gt;
+    AND USE_YN = #{useYn}
+  &lt;/if&gt;
+&lt;/where&gt;
+ORDER BY SEQ_NM
+LIMIT #{pageSize} OFFSET #{offset}</pre>
+        </div>
+      </div>
+      <div class="note">⚠ Warning: WHERE 1=1 패턴 사용. MyBatis &lt;where&gt; 태그로 교체 권고. LIMIT/OFFSET 페이징과 바인드변수는 거버넌스 준수.</div>
+    </div>
+
+    <!-- getSequenceDetail -->
+    <div class="sql-block">
+      <div class="sql-head">
+        <span class="sql-id">getSequenceDetail</span>
+        <div class="badges">
+          <span class="b-w">⚠ WHERE 1=1</span>
+          <span class="b-ok">✓ 바인드변수 #{}</span>
+        </div>
+      </div>
+      <div class="sql-panels">
+        <div class="panel">
+          <div class="panel-title cur">현재 (Warning)</div>
+          <pre>SELECT *
+FROM TB_SEQ_MST
+WHERE 1=1
+  AND SEQ_ID = #{seqId}</pre>
+        </div>
+        <div class="panel">
+          <div class="panel-title fix">수정 예시 (권고)</div>
+          <pre>SELECT *
+FROM TB_SEQ_MST
+WHERE SEQ_ID = #{seqId}</pre>
+        </div>
+      </div>
+      <div class="note">⚠ Warning: 단일 조건에서 WHERE 1=1 패턴은 불필요합니다. 직접 WHERE 조건으로 교체 권고.</div>
+    </div>
+
+    <!-- getSequenceDuplicated -->
+    <div class="sql-block">
+      <div class="sql-head">
+        <span class="sql-id">getSequenceDuplicated</span>
+        <div class="badges">
+          <span class="b-w">⚠ WHERE 1=1</span>
+          <span class="b-ok">✓ 바인드변수 #{}</span>
+        </div>
+      </div>
+      <div class="sql-panels">
+        <div class="panel">
+          <div class="panel-title cur">현재 (Warning)</div>
+          <pre>SELECT COUNT(*) AS CNT
+FROM TB_SEQ_MST
+WHERE 1=1
+  AND SEQ_NM = #{seqNm}
+<if test="seqId != null and seqId != ''">
+  AND SEQ_ID != #{seqId}
+</if></pre>
+        </div>
+        <div class="panel">
+          <div class="panel-title fix">수정 예시 (권고)</div>
+          <pre>SELECT COUNT(*) AS CNT
+FROM TB_SEQ_MST
+&lt;where&gt;
+  AND SEQ_NM = #{seqNm}
+  &lt;if test="seqId != null and seqId != ''"&gt;
+    AND SEQ_ID != #{seqId}
+  &lt;/if&gt;
+&lt;/where&gt;</pre>
+        </div>
+      </div>
+      <div class="note">⚠ Warning: WHERE 1=1 패턴 사용. &lt;where&gt; 태그로 교체 권고. 중복 체크 로직(seqId 제외 조건) 자체는 적절합니다.</div>
+    </div>
+
+    <!-- insertSequence -->
+    <div class="sql-block">
+      <div class="sql-head">
+        <span class="sql-id">insertSequence</span>
+        <div class="badges">
+          <span class="b-ok">✓ CURRENT_TIMESTAMP</span>
+          <span class="b-ok">✓ 바인드변수 #{}</span>
+        </div>
+      </div>
+      <div class="note-ok">CURRENT_TIMESTAMP 사용 및 바인드변수 처리 준수. 거버넌스 준수.</div>
+    </div>
+
+    <!-- updateSequence -->
+    <div class="sql-block">
+      <div class="sql-head">
+        <span class="sql-id">updateSequence</span>
+        <div class="badges">
+          <span class="b-ok">✓ CURRENT_TIMESTAMP</span>
+          <span class="b-ok">✓ WHERE 조건 명확</span>
+          <span class="b-ok">✓ 바인드변수 #{}</span>
+        </div>
+      </div>
+      <div class="note-ok">CURRENT_TIMESTAMP, 명확한 WHERE 조건, 바인드변수 모두 준수. 거버넌스 준수.</div>
+    </div>
+
+    <!-- deleteSequence -->
+    <div class="sql-block">
+      <div class="sql-head">
+        <span class="sql-id">deleteSequence</span>
+        <div class="badges">
+          <span class="b-ok">✓ WHERE 조건 명확</span>
+          <span class="b-ok">✓ 바인드변수 #{}</span>
+        </div>
+      </div>
+      <div class="note-ok">명확한 WHERE 조건 및 바인드변수 처리. 거버넌스 준수.</div>
+    </div>
+  </div>
+
+  <!-- 3. 종합 요약 -->
+  <div class="section" id="summary">
+    <div class="section-title">3. 종합 요약</div>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Mapper</th>
+          <th>SQL ID</th>
+          <th>Critical</th>
+          <th>Warning</th>
+          <th>준수 항목</th>
+          <th>조치 필요</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>SequenceManagerMapper</td>
+          <td>getSequenceList</td>
+          <td>0</td>
+          <td>1 (WHERE 1=1)</td>
+          <td>LIMIT/OFFSET, 바인드변수</td>
+          <td>&lt;where&gt; 태그 교체 권고</td>
+        </tr>
+        <tr>
+          <td>SequenceManagerMapper</td>
+          <td>getSequenceDetail</td>
+          <td>0</td>
+          <td>1 (WHERE 1=1)</td>
+          <td>바인드변수</td>
+          <td>직접 WHERE 조건으로 교체 권고</td>
+        </tr>
+        <tr>
+          <td>SequenceManagerMapper</td>
+          <td>getSequenceDuplicated</td>
+          <td>0</td>
+          <td>1 (WHERE 1=1)</td>
+          <td>바인드변수</td>
+          <td>&lt;where&gt; 태그 교체 권고</td>
+        </tr>
+        <tr>
+          <td>SequenceManagerMapper</td>
+          <td>insertSequence</td>
+          <td>0</td>
+          <td>0</td>
+          <td>CURRENT_TIMESTAMP, 바인드변수</td>
+          <td>없음</td>
+        </tr>
+        <tr>
+          <td>SequenceManagerMapper</td>
+          <td>updateSequence</td>
+          <td>0</td>
+          <td>0</td>
+          <td>CURRENT_TIMESTAMP, WHERE 명확, 바인드변수</td>
+          <td>없음</td>
+        </tr>
+        <tr>
+          <td>SequenceManagerMapper</td>
+          <td>deleteSequence</td>
+          <td>0</td>
+          <td>0</td>
+          <td>WHERE 명확, 바인드변수</td>
+          <td>없음</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note" style="margin-top:16px;">전반적으로 거버넌스 준수도가 높습니다. WHERE 1=1 패턴(3건)만 &lt;where&gt; 태그로 교체하면 완전 준수 달성 가능합니다.</div>
+  </div>
+
+</div>
+</body>
+</html>
